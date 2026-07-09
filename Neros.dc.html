@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Geist:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/motion@11.11.13/dist/motion.js"></script>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#060709;color:#D6DCE5}
+  ::selection{background:#FF5A1F;color:#060709}
+  ::-webkit-scrollbar{width:0;height:0}
+  @keyframes nrsSweep{to{transform:rotate(360deg)}}
+  @keyframes nrsBlink{0%,45%{opacity:1}50%,95%{opacity:.15}100%{opacity:1}}
+  @keyframes nrsScan{0%{transform:translateY(-100%)}100%{transform:translateY(200%)}}
+  @keyframes nrsMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  [data-news-feature]:hover [data-news-img],[data-news-item]:hover [data-news-img]{transform:scale(1.06)}
+  [data-news-item]:hover [data-news-img]{opacity:.72!important}
+  [data-icon]{transition:transform .45s cubic-bezier(.16,1,.3,1),color .35s ease}
+  [data-icard]:hover [data-icon]{color:var(--orange)!important;transform:translateY(-3px)}
+  [data-arrow],[data-arrow-up]{transition:transform .3s cubic-bezier(.16,1,.3,1)}
+  a:hover [data-arrow],button:hover [data-arrow]{transform:translateX(5px)}
+  [data-atab]:hover [data-arrow]{color:var(--orange)!important}
+  a:hover [data-arrow-up]{transform:translate(3px,-3px)}
+  @keyframes nrsFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+  @keyframes nrsGrain{0%,100%{transform:translate(0,0)}10%{transform:translate(-4%,-4%)}30%{transform:translate(3%,-2%)}50%{transform:translate(-2%,3%)}70%{transform:translate(2%,2%)}90%{transform:translate(-3%,1%)}}
+  @keyframes nrsPing{0%{transform:scale(1);opacity:.7}80%,100%{transform:scale(2.6);opacity:0}}
+  @keyframes nrsCountPop{0%{text-shadow:0 0 0 transparent}45%{text-shadow:0 0 24px rgba(255,90,31,.55)}100%{text-shadow:0 0 0 transparent}}
+  @media (max-width:820px){.nrs-desktop-nav{display:none!important}.nrs-cursor{display:none!important}[data-menu-open]{display:flex!important}}
+  @media (max-width:860px){[data-news-grid]{grid-template-columns:1fr!important}[data-news-feature]{grid-column:1/-1!important;min-height:clamp(320px,52vh,460px)!important}[data-news-list]{grid-column:1/-1!important}}
+  @media (max-width:440px){[data-news-list]{grid-template-columns:1fr!important}}
+</style>
+</helmet>
+<div ref="{{ rootRef }}" style="--obsidian:#060709;--carbon:#0D1014;--graphite:#171B21;--steel:#7C8796;--titanium:#D6DCE5;--orange:#FF5A1F;--green:#FF5A1F;--red:#FF3737;--line:rgba(255,255,255,.09);--disp:'Space Grotesk',sans-serif;--body:'Geist',sans-serif;--mono:'DM Mono','JetBrains Mono',monospace;position:relative;background:#060709;color:#D6DCE5;font-family:'Geist',sans-serif;overflow-x:clip;min-height:100vh">
+
+  <!-- CUSTOM CURSOR -->
+  <div data-cursor class="nrs-cursor" style="position:fixed;top:0;left:0;width:38px;height:38px;margin:-19px 0 0 -19px;z-index:9999;pointer-events:none;mix-blend-mode:difference;opacity:0;transition:opacity .3s">
+    <div data-cursor-ring style="position:absolute;inset:0;border:1px solid #fff;border-radius:50%;transition:transform .18s cubic-bezier(.2,.8,.2,1)"></div>
+    <div style="position:absolute;top:50%;left:50%;width:5px;height:5px;margin:-2.5px;background:#fff;border-radius:50%"></div>
+    <div style="position:absolute;top:50%;left:-6px;width:4px;height:1px;background:#fff"></div>
+    <div style="position:absolute;top:50%;right:-6px;width:4px;height:1px;background:#fff"></div>
+    <div style="position:absolute;left:50%;top:-6px;height:4px;width:1px;background:#fff"></div>
+    <div style="position:absolute;left:50%;bottom:-6px;height:4px;width:1px;background:#fff"></div>
+  </div>
+
+  <!-- FIXED HUD CHROME -->
+  <div style="position:fixed;inset:0;z-index:60;pointer-events:none;mix-blend-mode:screen">
+    <div style="position:absolute;top:88px;left:22px;width:14px;height:14px;border-left:1px solid rgba(255,255,255,.22);border-top:1px solid rgba(255,255,255,.22)"></div>
+    <div style="position:absolute;top:88px;right:22px;width:14px;height:14px;border-right:1px solid rgba(255,255,255,.22);border-top:1px solid rgba(255,255,255,.22)"></div>
+    <div style="position:absolute;bottom:22px;left:22px;width:14px;height:14px;border-left:1px solid rgba(255,255,255,.22);border-bottom:1px solid rgba(255,255,255,.22)"></div>
+    <div style="position:absolute;bottom:22px;right:22px;width:14px;height:14px;border-right:1px solid rgba(255,255,255,.22);border-bottom:1px solid rgba(255,255,255,.22)"></div>
+  </div>
+
+  <!-- SCROLL PROGRESS RAIL -->
+  <div style="position:fixed;top:0;left:0;height:2px;width:100%;z-index:70;background:transparent">
+    <div data-progress style="height:100%;width:0%;background:linear-gradient(90deg,var(--orange),#ff8a5f);box-shadow:0 0 14px rgba(255,90,31,.7)"></div>
+  </div>
+
+  <!-- NAV -->
+  <header style="position:fixed;top:0;left:0;width:100%;z-index:80;padding:20px clamp(18px,4vw,44px);display:flex;align-items:center;justify-content:space-between">
+    <div data-nav-bg style="position:absolute;inset:0;background:rgba(6,7,9,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid transparent;opacity:0;transition:opacity .4s,border-color .4s;z-index:-1"></div>
+    <a data-magnetic href="#top" onClick="{{ navClick }}" style="display:flex;align-items:center;gap:12px;text-decoration:none">
+      <img src="assets/Logo_White.png" alt="NEROS" style="height:19px;width:auto;display:block"/>
+    </a>
+    <nav class="nrs-desktop-nav" style="display:flex;align-items:center;gap:6px">
+      <a data-magnetic href="#systems" onClick="{{ navClick }}" style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--steel);text-decoration:none;padding:8px 14px;transition:color .25s" style-hover="color:#fff">Systems</a>
+      <a data-magnetic href="#technology" onClick="{{ navClick }}" style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--steel);text-decoration:none;padding:8px 14px;transition:color .25s" style-hover="color:#fff">Technology</a>
+      <a data-magnetic href="#manufacturing" onClick="{{ navClick }}" style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--steel);text-decoration:none;padding:8px 14px;transition:color .25s" style-hover="color:#fff">Manufacturing</a>
+      <a data-magnetic href="#company" onClick="{{ navClick }}" style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--steel);text-decoration:none;padding:8px 14px;transition:color .25s" style-hover="color:#fff">Company</a>
+      <a data-magnetic href="#news" onClick="{{ navClick }}" style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--steel);text-decoration:none;padding:8px 14px;transition:color .25s" style-hover="color:#fff">News</a>
+      <a data-magnetic data-cta href="#company" onClick="{{ navClick }}" style="position:relative;overflow:hidden;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#fff;text-decoration:none;padding:11px 20px;margin-left:10px;background:var(--orange);border-radius:4px;font-weight:700;transition:box-shadow .3s ease" style-hover="box-shadow:0 0 26px 3px rgba(255,90,31,.7)">
+        <span style="position:relative;z-index:2;display:inline-flex;align-items:center;gap:8px">Request Briefing<svg data-arrow width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+      </a>
+    </nav>
+    <button data-magnetic data-menu-open onClick="{{ toggleMenu }}" style="display:none;align-items:center;gap:10px;background:none;border:1px solid var(--line);border-radius:4px;padding:10px 14px;color:var(--titanium);font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:border-color .25s,color .25s" style-hover="border-color:rgba(255,255,255,.4);color:#fff">
+      <span style="display:block;width:16px;height:8px;position:relative">
+        <span style="position:absolute;top:0;left:0;width:100%;height:1.5px;background:currentColor"></span>
+        <span style="position:absolute;bottom:0;left:0;width:100%;height:1.5px;background:currentColor"></span>
+      </span>Menu
+    </button>
+  </header>
+
+  <!-- FULLSCREEN MENU -->
+  <div data-menu style="position:fixed;inset:0;z-index:90;background:#060709;transform:translateY(-100%);transition:transform .6s cubic-bezier(.76,0,.24,1);display:flex;flex-direction:column;padding:clamp(20px,5vw,44px)">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <img src="assets/Logo_White.png" alt="NEROS" style="height:19px"/>
+      <button data-magnetic onClick="{{ toggleMenu }}" style="background:none;border:1px solid var(--line);border-radius:4px;padding:10px 16px;color:var(--titanium);font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:border-color .25s,color .25s" style-hover="border-color:rgba(255,255,255,.4);color:#fff">Close ✕</button>
+    </div>
+    <nav style="margin-top:auto;margin-bottom:auto;display:flex;flex-direction:column;gap:6px">
+      <a data-menu-link href="#systems" onClick="{{ navClick }}" style="font-family:var(--disp);font-weight:800;font-size:clamp(38px,11vw,96px);line-height:1;letter-spacing:-.02em;color:var(--titanium);text-decoration:none">Systems</a>
+      <a data-menu-link href="#technology" onClick="{{ navClick }}" style="font-family:var(--disp);font-weight:800;font-size:clamp(38px,11vw,96px);line-height:1;letter-spacing:-.02em;color:var(--titanium);text-decoration:none">Technology</a>
+      <a data-menu-link href="#manufacturing" onClick="{{ navClick }}" style="font-family:var(--disp);font-weight:800;font-size:clamp(38px,11vw,96px);line-height:1;letter-spacing:-.02em;color:var(--titanium);text-decoration:none">Manufacturing</a>
+      <a data-menu-link href="#company" onClick="{{ navClick }}" style="font-family:var(--disp);font-weight:800;font-size:clamp(38px,11vw,96px);line-height:1;letter-spacing:-.02em;color:var(--titanium);text-decoration:none">Company</a>
+      <a data-menu-link href="#news" onClick="{{ navClick }}" style="font-family:var(--disp);font-weight:800;font-size:clamp(38px,11vw,96px);line-height:1;letter-spacing:-.02em;color:var(--titanium);text-decoration:none">News</a>
+    </nav>
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel)">
+      <span>San Diego, CA</span><span>Sovereign Defense Manufacturing</span><span>EST. 2023</span>
+    </div>
+  </div>
+
+  <!-- ===================== HERO ===================== -->
+  <section id="top" data-hero style="position:relative;height:100vh;min-height:640px;width:100%;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end">
+    <video data-hero-video autoplay muted loop playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;will-change:transform">
+      <source src="assets/Hero.mp4" type="video/mp4"/>
+    </video>
+    <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(6,7,9,.72) 0%,rgba(6,7,9,.2) 32%,rgba(6,7,9,.35) 60%,rgba(6,7,9,.96) 100%)"></div>
+    <div style="position:absolute;inset:0;z-index:1;background:radial-gradient(120% 90% at 50% 30%,transparent 50%,rgba(6,7,9,.55) 100%)"></div>
+    <div style="position:absolute;inset:0;z-index:1;opacity:.5;background:repeating-linear-gradient(180deg,transparent 0 3px,rgba(0,0,0,.14) 3px 4px)"></div>
+
+    <!-- hero telemetry overlays -->
+    <div style="position:absolute;bottom:clamp(430px,60vh,600px);right:clamp(14px,3.4vw,38px);z-index:3;font-family:var(--mono);transform:rotate(-90deg);transform-origin:right bottom">
+      <div style="display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.24em;color:var(--green);text-transform:uppercase"><span style="width:7px;height:7px;background:var(--green);border-radius:50%;animation:nrsBlink 1.4s infinite;box-shadow:0 0 10px var(--green)"></span>Tracking · Live Feed</div>
+      <div data-hero-coord style="margin-top:8px;font-size:11px;letter-spacing:.16em;color:rgba(214,220,229,.55)">LAT 32.7157  LON -117.1611  ALT 000112m</div>
+    </div>
+    <div style="position:absolute;top:clamp(90px,13vh,140px);right:clamp(18px,4vw,44px);z-index:3;width:92px;height:92px;pointer-events:none">
+      <div style="position:absolute;inset:0;border:1px solid rgba(255,90,31,.28);border-radius:50%"></div>
+      <div style="position:absolute;inset:22px;border:1px solid rgba(255,90,31,.18);border-radius:50%"></div>
+      <div style="position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(255,90,31,.18)"></div>
+      <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,90,31,.18)"></div>
+      <div style="position:absolute;inset:0;border-radius:50%;animation:nrsSweep 3.4s linear infinite;background:conic-gradient(from 0deg,transparent 0deg,rgba(255,90,31,.55) 40deg,transparent 60deg)"></div>
+    </div>
+
+    <div data-hero-content style="position:relative;z-index:3;padding:0 clamp(18px,4vw,44px) clamp(64px,9vh,110px);will-change:transform,opacity">
+      <h1 data-scramble="INDUSTRIALIZING DETERRENCE" style="font-family:var(--disp);font-weight:800;font-size:clamp(42px,9.2vw,148px);line-height:.9;letter-spacing:-.03em;color:#fff;margin:0;max-width:15ch;text-wrap:balance">INDUSTRIALIZING DETERRENCE</h1>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:28px;margin-top:clamp(22px,4vh,40px)">
+        <p data-reveal style="max-width:52ch;font-size:clamp(15px,1.5vw,19px);line-height:1.7;color:var(--titanium);margin:0">We design and manufacture autonomous systems that ensure strategic advantage for Western allies. Not eventually. Now.</p>
+        <a data-magnetic data-cta href="#systems" onClick="{{ navClick }}" style="flex-shrink:0;display:inline-flex;align-items:center;gap:14px;background:var(--orange);color:#fff;text-decoration:none;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:16px 26px;border-radius:4px;transition:box-shadow .3s ease" style-hover="box-shadow:0 0 30px 4px rgba(255,90,31,.7)">View Systems<svg data-arrow width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+      </div>
+    </div>
+
+    <!-- bottom telemetry ribbon -->
+    <div style="position:relative;z-index:3;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(6,7,9,.4);overflow:hidden">
+      <div data-marquee style="display:flex;white-space:nowrap;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--steel);padding:11px 0;will-change:transform;animation:nrsMarquee 32s linear infinite">
+        <span style="padding:0 28px">Manufacturing Velocity</span><span style="color:var(--orange)">◆</span><span style="padding:0 28px">Vertical Integration</span><span style="color:var(--orange)">◆</span><span style="padding:0 28px">Domestic Supply Chain</span><span style="color:var(--orange)">◆</span><span style="padding:0 28px">Battlefield Autonomy</span><span style="color:var(--orange)">◆</span><span style="padding:0 28px">Scale Wins</span><span style="color:var(--orange)">◆</span>
+        <span style="padding:0 28px">Manufacturing Velocity</span><span style="color:var(--orange)">◆</span><span style="padding:0 28px">Vertical Integration</span><span style="color:var(--orange)">◆</span><span style="padding:0 28px">Domestic Supply Chain</span><span style="color:var(--orange)">◆</span><span style="padding:0 28px">Battlefield Autonomy</span><span style="color:var(--orange)">◆</span><span style="padding:0 28px">Scale Wins</span><span style="color:var(--orange)">◆</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== POSITIONING ===================== -->
+  <section style="position:relative;padding:clamp(90px,16vh,190px) clamp(18px,4vw,44px);background:var(--obsidian)">
+    <div style="max-width:1440px;margin:0 auto">
+      <h2 style="font-family:var(--disp);font-weight:700;font-size:clamp(28px,5vw,72px);line-height:1.02;letter-spacing:-.025em;margin:0;max-width:20ch">
+        <span data-line-reveal style="color:#fff">Neros is the operating system for modern</span>
+        <span data-line-reveal style="color:#fff">asymmetric warfare — <span style="color:#fff">and the factory that builds it.</span></span>
+      </h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;margin-top:clamp(56px,9vh,96px);background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden">
+        <div data-reveal data-icard style="background:var(--carbon);padding:32px;transition:background .35s ease,box-shadow .35s ease" style-hover="background:var(--graphite);box-shadow:inset 0 2px 0 var(--orange)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:var(--orange);text-transform:uppercase">Sovereign</div><svg data-icon width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--steel)" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 7.6-8 9-4.6-1.4-8-4.5-8-9V6l8-3z"></path><path d="M8.5 12l2.4 2.4L15.5 9.5"></path></svg></div>
+          <p style="margin:14px 0 0;font-size:15px;line-height:1.6;color:var(--steel)">Design, electronics, radios, propulsion and supply chain — vertically integrated and built domestically.</p>
+        </div>
+        <div data-reveal data-icard style="background:var(--carbon);padding:32px;transition:background .35s ease,box-shadow .35s ease" style-hover="background:var(--graphite);box-shadow:inset 0 2px 0 var(--orange)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:var(--orange);text-transform:uppercase">Industrial</div><svg data-icon width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--steel)" aria-hidden="true"><path d="M2 21h20M4 21V10l5 3.4V10l5 3.4V4h6v17"></path><path d="M17 8h2M17 12h2M17 16h2"></path></svg></div>
+          <p style="margin:14px 0 0;font-size:15px;line-height:1.6;color:var(--steel)">The advantage isn't hardware. The advantage is manufacturing velocity at industrial scale.</p>
+        </div>
+        <div data-reveal data-icard style="background:var(--carbon);padding:32px;transition:background .35s ease,box-shadow .35s ease" style-hover="background:var(--graphite);box-shadow:inset 0 2px 0 var(--orange)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:var(--orange);text-transform:uppercase">Relentless</div><svg data-icon width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--steel)" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"></path></svg></div>
+          <p style="margin:14px 0 0;font-size:15px;line-height:1.6;color:var(--steel)">Execution obsessed. Design-to-flight measured in days, iteration measured in hours.</p>
+        </div>
+        <div data-reveal data-icard style="background:var(--carbon);padding:32px;transition:background .35s ease,box-shadow .35s ease" style-hover="background:var(--graphite);box-shadow:inset 0 2px 0 var(--orange)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:var(--orange);text-transform:uppercase">American</div><svg data-icon width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" style="color:var(--steel)" aria-hidden="true"><path d="M12 3l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2-5.6-3.2-5.6 3.2 1.3-6.2L3 9.5l6.3-.7L12 3z"></path></svg></div>
+          <p style="margin:14px 0 0;font-size:15px;line-height:1.6;color:var(--steel)">Ensuring Western strategic superiority through scalable autonomous systems.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PRODUCTS STICKY SHOWCASE ===================== -->
+  <section id="systems" data-products style="position:relative;height:340vh;background:var(--carbon)">
+    <div data-products-pin style="position:absolute;top:0;left:0;right:0;height:100vh;overflow:hidden;display:flex;flex-direction:column">
+      <!-- videos stacked -->
+      <div style="position:absolute;inset:0;z-index:0">
+        <video data-product-video="0" autoplay muted loop playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity .7s"><source src="assets/Archer_Strike.mp4" type="video/mp4"/></video>
+        <video data-product-video="1" muted loop playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .7s"><source src="assets/Crossbow.mp4" type="video/mp4"/></video>
+        <video data-product-video="2" muted loop playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .7s"><source src="assets/Longbow.mp4" type="video/mp4"/></video>
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,7,9,.94) 0%,rgba(6,7,9,.55) 42%,rgba(6,7,9,.15) 100%)"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(6,7,9,.85) 0%,transparent 30%)"></div>
+      </div>
+
+      <!-- header -->
+      <div style="position:relative;z-index:2;padding:clamp(88px,13vh,120px) clamp(18px,4vw,44px) 0;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap">
+        <div>
+          <div style="font-family:var(--disp);font-weight:700;font-size:clamp(20px,2.4vw,30px);color:#fff;margin-top:12px;letter-spacing:-.02em">Built for the battlefield. Scaled for the arsenal.</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <span data-dot="0" style="width:34px;height:3px;background:var(--orange);transition:background .3s"></span>
+          <span data-dot="1" style="width:34px;height:3px;background:rgba(255,255,255,.16);transition:background .3s"></span>
+          <span data-dot="2" style="width:34px;height:3px;background:rgba(255,255,255,.16);transition:background .3s"></span>
+        </div>
+      </div>
+
+      <!-- product panels -->
+      <div style="position:relative;z-index:2;margin-top:auto;padding:0 clamp(18px,4vw,44px) clamp(40px,7vh,80px)">
+        <div style="position:relative;min-height:clamp(300px,42vh,380px)">
+          <!-- ARCHER -->
+          <div data-panel="0" style="position:absolute;bottom:0;left:0;right:0;opacity:1;transform:translateY(0);transition:opacity .5s,transform .5s">
+            <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+              <div style="font-family:var(--mono);font-size:12px;letter-spacing:.24em;color:var(--orange);text-transform:uppercase;padding-bottom:14px">01 / FPV Strike</div>
+            </div>
+            <h3 style="font-family:var(--disp);font-weight:900;font-size:clamp(52px,11vw,150px);line-height:.86;letter-spacing:-.04em;color:#fff;margin:4px 0 0">ARCHER</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:32px;margin-top:28px;align-items:flex-end;justify-content:space-between">
+              <p style="max-width:44ch;font-size:15px;line-height:1.65;color:var(--titanium);margin:0">Precision terminal-guided strike platform. Mass-manufacturable, radio-hardened, and lethal at range against armored and dismounted targets.</p>
+              <div style="display:flex;gap:clamp(20px,4vw,54px);flex-wrap:wrap">
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:#fff"><span data-pnum data-to="20">20</span><span style="font-size:.5em;color:var(--steel)">KM</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Range</div></div>
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:#fff"><span data-pnum data-to="150">150</span><span style="font-size:.5em;color:var(--steel)">KM/H</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Speed</div></div>
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:#fff"><span data-pnum data-to="1.5">1.5</span><span style="font-size:.5em;color:var(--steel)">KG</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Payload</div></div>
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:var(--orange)"><span data-pnum data-to="25">25</span><span style="font-size:.5em;color:var(--steel)">MIN</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Endurance</div></div>
+              </div>
+            </div>
+          </div>
+          <!-- CROSSBOW -->
+          <div data-panel="1" style="position:absolute;bottom:0;left:0;right:0;opacity:0;transform:translateY(30px);transition:opacity .5s,transform .5s;pointer-events:none">
+            <div style="font-family:var(--mono);font-size:12px;letter-spacing:.24em;color:var(--orange);text-transform:uppercase;padding-bottom:14px">02 / Multirole</div>
+            <h3 style="font-family:var(--disp);font-weight:900;font-size:clamp(48px,10vw,150px);line-height:.86;letter-spacing:-.04em;color:#fff;margin:4px 0 0">CROSSBOW</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:32px;margin-top:28px;align-items:flex-end;justify-content:space-between">
+              <p style="max-width:44ch;font-size:15px;line-height:1.65;color:var(--titanium);margin:0">Extended-range multirole system for ISR and strike. Modular payload bay, mesh datalink, and swappable seeker heads for mission flexibility.</p>
+              <div style="display:flex;gap:clamp(20px,4vw,54px);flex-wrap:wrap">
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:#fff"><span data-pnum data-to="40">40</span><span style="font-size:.5em;color:var(--steel)">KM</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Range</div></div>
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:#fff"><span data-pnum data-to="130">130</span><span style="font-size:.5em;color:var(--steel)">KM/H</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Speed</div></div>
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:#fff"><span data-pnum data-to="3.0">3.0</span><span style="font-size:.5em;color:var(--steel)">KG</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Payload</div></div>
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:var(--orange)"><span data-pnum data-to="45">45</span><span style="font-size:.5em;color:var(--steel)">MIN</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Endurance</div></div>
+              </div>
+            </div>
+          </div>
+          <!-- LONGBOW -->
+          <div data-panel="2" style="position:absolute;bottom:0;left:0;right:0;opacity:0;transform:translateY(30px);transition:opacity .5s,transform .5s;pointer-events:none">
+            <div style="font-family:var(--mono);font-size:12px;letter-spacing:.24em;color:var(--orange);text-transform:uppercase;padding-bottom:14px">03 / Deep Strike</div>
+            <h3 style="font-family:var(--disp);font-weight:900;font-size:clamp(50px,10.5vw,150px);line-height:.86;letter-spacing:-.04em;color:#fff;margin:4px 0 0">LONGBOW</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:32px;margin-top:28px;align-items:flex-end;justify-content:space-between">
+              <p style="max-width:44ch;font-size:15px;line-height:1.65;color:var(--titanium);margin:0">Long-endurance deep-strike platform with autonomous waypoint navigation in GPS-denied environments. Carries and deploys smaller effectors.</p>
+              <div style="display:flex;gap:clamp(20px,4vw,54px);flex-wrap:wrap">
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:#fff"><span data-pnum data-to="100">100</span><span style="font-size:.5em;color:var(--steel)">KM</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Range</div></div>
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:#fff"><span data-pnum data-to="120">120</span><span style="font-size:.5em;color:var(--steel)">KM/H</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Speed</div></div>
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:#fff"><span data-pnum data-to="5.0">5.0</span><span style="font-size:.5em;color:var(--steel)">KG</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Payload</div></div>
+                <div><div style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,40px);color:var(--orange)"><span data-pnum data-to="90">90</span><span style="font-size:.5em;color:var(--steel)">MIN</span></div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-top:4px">Endurance</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ANATOMY / BLUEPRINT ===================== -->
+  <section id="anatomy" data-anatomy style="position:relative;padding:clamp(90px,16vh,190px) clamp(18px,4vw,44px);background:var(--obsidian);border-top:1px solid var(--line);overflow:hidden">
+    <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;opacity:.6;background:linear-gradient(rgba(255,255,255,.032) 1px,transparent 1px) 0 0/46px 46px,linear-gradient(90deg,rgba(255,255,255,.032) 1px,transparent 1px) 0 0/46px 46px;-webkit-mask-image:radial-gradient(130% 110% at 62% 42%,#000 38%,transparent 84%);mask-image:radial-gradient(130% 110% at 62% 42%,#000 38%,transparent 84%)"></div>
+    <div style="position:relative;max-width:1440px;margin:0 auto">
+      <div style="display:flex;flex-wrap:wrap;gap:clamp(32px,4.5vw,72px);align-items:center">
+
+        <!-- LEFT: heading + subsystem tabs + readout -->
+        <div style="flex:1 1 320px;min-width:280px;max-width:460px">
+          <h2 data-reveal style="font-family:var(--disp);font-weight:700;font-size:clamp(28px,4.4vw,58px);line-height:1.0;letter-spacing:-.025em;margin:0 0 22px;color:#fff">Every system, drawn from first principles.</h2>
+          <p data-reveal style="font-size:15px;line-height:1.7;color:var(--steel);margin:0 0 34px;max-width:46ch">Airframe, radios, powertrain and optics — engineered in-house and rendered to spec. Select a subsystem to inspect the schematic.</p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button data-atab="0" type="button" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--carbon);border:1px solid var(--line);border-left:2px solid var(--orange);border-radius:3px;padding:14px 16px;cursor:pointer;transition:border-color .3s,background .3s">
+              <span data-atab-num style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--orange)">01</span>
+              <span data-atab-name style="font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:-.01em;color:#fff">Full Assembly</span>
+              <svg data-arrow width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="margin-left:auto;flex-shrink:0;color:var(--steel)" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+            </button>
+            <button data-atab="1" type="button" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:transparent;border:1px solid var(--line);border-left:2px solid var(--line);border-radius:3px;padding:14px 16px;cursor:pointer;transition:border-color .3s,background .3s">
+              <span data-atab-num style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--steel)">02</span>
+              <span data-atab-name style="font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:-.01em;color:var(--titanium)">Antenna Array</span>
+              <svg data-arrow width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="margin-left:auto;flex-shrink:0;color:var(--steel)" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+            </button>
+            <button data-atab="2" type="button" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:transparent;border:1px solid var(--line);border-left:2px solid var(--line);border-radius:3px;padding:14px 16px;cursor:pointer;transition:border-color .3s,background .3s">
+              <span data-atab-num style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--steel)">03</span>
+              <span data-atab-name style="font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:-.01em;color:var(--titanium)">Powertrain</span>
+              <svg data-arrow width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="margin-left:auto;flex-shrink:0;color:var(--steel)" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+            </button>
+            <button data-atab="3" type="button" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:transparent;border:1px solid var(--line);border-left:2px solid var(--line);border-radius:3px;padding:14px 16px;cursor:pointer;transition:border-color .3s,background .3s">
+              <span data-atab-num style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--steel)">04</span>
+              <span data-atab-name style="font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:-.01em;color:var(--titanium)">Optical Payload</span>
+              <svg data-arrow width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="margin-left:auto;flex-shrink:0;color:var(--steel)" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+            </button>
+          </div>
+          <div style="margin-top:30px">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--steel);margin-bottom:6px">// Readout</div>
+            <div data-aspec style="border-top:1px solid var(--line)"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT: blueprint stage -->
+        <div data-reveal style="flex:1.7 1 480px;min-width:280px">
+          <div data-astage style="position:relative;aspect-ratio:4/3;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:radial-gradient(120% 120% at 52% 32%,rgba(255,90,31,.06),transparent 62%),var(--carbon)">
+            <!-- corner ticks -->
+            <div style="position:absolute;top:12px;left:12px;width:13px;height:13px;border-left:1px solid rgba(255,255,255,.28);border-top:1px solid rgba(255,255,255,.28);pointer-events:none"></div>
+            <div style="position:absolute;top:12px;right:12px;width:13px;height:13px;border-right:1px solid rgba(255,255,255,.28);border-top:1px solid rgba(255,255,255,.28);pointer-events:none"></div>
+            <div style="position:absolute;bottom:12px;left:12px;width:13px;height:13px;border-left:1px solid rgba(255,255,255,.28);border-bottom:1px solid rgba(255,255,255,.28);pointer-events:none"></div>
+            <div style="position:absolute;bottom:12px;right:12px;width:13px;height:13px;border-right:1px solid rgba(255,255,255,.28);border-bottom:1px solid rgba(255,255,255,.28);pointer-events:none"></div>
+
+            <!-- stacked schematics -->
+            <div data-aparallax style="position:absolute;inset:0;transition:transform .25s cubic-bezier(.2,.8,.2,1)">
+              <img data-aimg="0" src="assets/archer-blueprint.png" alt="Archer full assembly schematic" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:5%;opacity:1;transition:opacity .55s ease;clip-path:inset(0 0 100% 0)"/>
+              <img data-aimg="1" src="assets/archer-antennas.png" alt="Antenna array schematic" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:5%;opacity:0;transition:opacity .55s ease"/>
+              <img data-aimg="2" src="assets/archer-powertrain.png" alt="Powertrain schematic" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:5%;opacity:0;transition:opacity .55s ease"/>
+              <img data-aimg="3" src="assets/archer-front.png" alt="Optical payload schematic" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:5%;opacity:0;transition:opacity .55s ease"/>
+            </div>
+
+            <!-- plotter scan line -->
+            <div data-ascan style="position:absolute;left:0;right:0;top:0;height:2px;opacity:0;pointer-events:none;background:linear-gradient(90deg,transparent,var(--orange) 20%,var(--orange) 80%,transparent);box-shadow:0 0 20px 3px rgba(255,90,31,.55);z-index:4"></div>
+
+            <!-- hotspots (full assembly only) -->
+            <div data-ahot style="position:absolute;inset:0;pointer-events:none;transition:opacity .4s;z-index:5">
+              <button data-ahotspot data-goto="1" type="button" title="Antenna Array" style="position:absolute;left:30%;top:29%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:9px;background:none;border:0;padding:0;cursor:pointer;pointer-events:auto">
+                <span style="position:relative;width:13px;height:13px;display:block"><span style="position:absolute;inset:0;border:1px solid var(--orange);border-radius:50%"></span><span style="position:absolute;inset:3px;background:var(--orange);border-radius:50%;box-shadow:0 0 10px var(--orange)"></span><span style="position:absolute;inset:-7px;border:1px solid rgba(255,90,31,.5);border-radius:50%;animation:nrsPing 2.4s ease-out infinite"></span></span>
+                <span style="font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--titanium);background:rgba(6,7,9,.72);padding:3px 7px;border:1px solid var(--line);white-space:nowrap;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)">RF · Antenna Array</span>
+              </button>
+              <button data-ahotspot data-goto="2" type="button" title="Powertrain" style="position:absolute;left:76%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:9px;background:none;border:0;padding:0;cursor:pointer;pointer-events:auto">
+                <span style="position:relative;width:13px;height:13px;display:block"><span style="position:absolute;inset:0;border:1px solid var(--orange);border-radius:50%"></span><span style="position:absolute;inset:3px;background:var(--orange);border-radius:50%;box-shadow:0 0 10px var(--orange)"></span><span style="position:absolute;inset:-7px;border:1px solid rgba(255,90,31,.5);border-radius:50%;animation:nrsPing 2.4s ease-out .5s infinite"></span></span>
+                <span style="font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--titanium);background:rgba(6,7,9,.72);padding:3px 7px;border:1px solid var(--line);white-space:nowrap;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)">PT · Powertrain</span>
+              </button>
+              <button data-ahotspot data-goto="3" type="button" title="Optical Payload" style="position:absolute;left:57%;top:84%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:9px;background:none;border:0;padding:0;cursor:pointer;pointer-events:auto">
+                <span style="position:relative;width:13px;height:13px;display:block"><span style="position:absolute;inset:0;border:1px solid var(--orange);border-radius:50%"></span><span style="position:absolute;inset:3px;background:var(--orange);border-radius:50%;box-shadow:0 0 10px var(--orange)"></span><span style="position:absolute;inset:-7px;border:1px solid rgba(255,90,31,.5);border-radius:50%;animation:nrsPing 2.4s ease-out 1s infinite"></span></span>
+                <span style="font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--titanium);background:rgba(6,7,9,.72);padding:3px 7px;border:1px solid var(--line);white-space:nowrap;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)">EO · Optical Payload</span>
+              </button>
+            </div>
+
+            <!-- frame readouts -->
+            <div style="position:absolute;top:16px;right:34px;font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(214,220,229,.45);text-align:right;pointer-events:none;z-index:3">Scale 1:4 · Orthographic</div>
+            <div style="position:absolute;bottom:16px;left:34px;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--green);pointer-events:none;z-index:3"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:nrsBlink 1.4s infinite"></span>DWG <span data-alabel style="color:rgba(214,220,229,.7)">NRS-ARCHER-A0</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TECHNOLOGY ===================== -->
+  <section id="technology" style="position:relative;padding:clamp(90px,16vh,190px) clamp(18px,4vw,44px);background:var(--obsidian)">
+    <div style="max-width:1440px;margin:0 auto">
+      <h2 data-reveal style="font-family:var(--disp);font-weight:700;font-size:clamp(28px,5vw,68px);line-height:1.02;letter-spacing:-.025em;margin:0 0 clamp(48px,7vh,80px);max-width:18ch;color:#fff">One integrated stack. Radios to autonomy.</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden">
+        <div data-reveal data-icard style="background:var(--carbon);padding:clamp(28px,3vw,44px);min-height:240px;display:flex;flex-direction:column;justify-content:space-between;transition:background .35s ease,box-shadow .35s ease" style-hover="background:var(--graphite);box-shadow:inset 0 2px 0 var(--orange)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--orange);text-transform:uppercase">Autonomy</div><svg data-icon width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--steel)" aria-hidden="true"><circle cx="12" cy="12" r="7"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle></svg></div>
+          <div><h3 style="font-family:var(--disp);font-weight:700;font-size:clamp(20px,2vw,28px);color:#fff;margin:0 0 12px">Fights through jamming</h3><p style="margin:0;font-size:14px;line-height:1.6;color:var(--steel)">Onboard vision-based guidance completes the mission in GPS-denied, EW-contested environments.</p></div>
+        </div>
+        <div data-reveal data-icard style="background:var(--carbon);padding:clamp(28px,3vw,44px);min-height:240px;display:flex;flex-direction:column;justify-content:space-between;transition:background .35s ease,box-shadow .35s ease" style-hover="background:var(--graphite);box-shadow:inset 0 2px 0 var(--orange)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--orange);text-transform:uppercase">Radios</div><svg data-icon width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--steel)" aria-hidden="true"><circle cx="12" cy="10" r="2"></circle><path d="M12 12v9M8.5 6.8a4.6 4.6 0 0 0 0 6.4M15.5 6.8a4.6 4.6 0 0 1 0 6.4M5.8 4a8.6 8.6 0 0 0 0 12M18.2 4a8.6 8.6 0 0 1 0 12"></path></svg></div>
+          <div><h3 style="font-family:var(--disp);font-weight:700;font-size:clamp(20px,2vw,28px);color:#fff;margin:0 0 12px">Sovereign datalinks</h3><p style="margin:0;font-size:14px;line-height:1.6;color:var(--steel)">Frequency-agile mesh radios designed and fabricated in-house — no foreign dependency.</p></div>
+        </div>
+        <div data-reveal data-icard style="background:var(--carbon);padding:clamp(28px,3vw,44px);min-height:240px;display:flex;flex-direction:column;justify-content:space-between;transition:background .35s ease,box-shadow .35s ease" style-hover="background:var(--graphite);box-shadow:inset 0 2px 0 var(--orange)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--orange);text-transform:uppercase">Software</div><svg data-icon width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" style="color:var(--steel)" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13.5l9 5 9-5"></path><path d="M3 18l9 5 9-5"></path></svg></div>
+          <div><h3 style="font-family:var(--disp);font-weight:700;font-size:clamp(20px,2vw,28px);color:#fff;margin:0 0 12px">Fleet-native OS</h3><p style="margin:0;font-size:14px;line-height:1.6;color:var(--steel)">One operating system commands swarms, updates over-the-air, and improves with every sortie.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MANUFACTURING ===================== -->
+  <section id="manufacturing" style="position:relative;background:var(--obsidian);border-top:1px solid var(--line)">
+    <div style="position:relative;height:clamp(420px,72vh,760px);overflow:hidden">
+      <video data-inview-video autoplay muted loop playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><source src="assets/Process.mp4" type="video/mp4"/></video>
+      <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,7,9,.7),rgba(6,7,9,.2) 40%,rgba(6,7,9,.95))"></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 clamp(18px,4vw,44px)">
+        <div style="max-width:1440px;margin:0 auto;width:100%">
+          <h2 style="font-family:var(--disp);font-weight:800;font-size:clamp(34px,7vw,110px);line-height:.94;letter-spacing:-.03em;margin:0;color:#fff;max-width:16ch">The factory itself<br/>is the product.</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- metrics -->
+    <div style="max-width:1440px;margin:0 auto;padding:clamp(56px,9vh,110px) clamp(18px,4vw,44px)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:clamp(28px,4vw,64px)">
+        <div data-reveal>
+          <div style="font-family:var(--disp);font-weight:800;font-size:clamp(44px,6.5vw,96px);line-height:1;letter-spacing:-.03em;color:#fff"><span data-count="10000" data-suffix="+">0</span></div>
+          <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel);margin-top:14px">Units / month capacity</div>
+        </div>
+        <div data-reveal>
+          <div style="font-family:var(--disp);font-weight:800;font-size:clamp(44px,6.5vw,96px);line-height:1;letter-spacing:-.03em;color:#fff"><span data-count="72" data-suffix="h">0</span></div>
+          <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel);margin-top:14px">Design to flight</div>
+        </div>
+        <div data-reveal>
+          <div style="font-family:var(--disp);font-weight:800;font-size:clamp(44px,6.5vw,96px);line-height:1;letter-spacing:-.03em;color:#fff"><span data-count="100" data-suffix="%">0</span></div>
+          <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel);margin-top:14px">Domestic supply chain</div>
+        </div>
+        <div data-reveal>
+          <div style="font-family:var(--disp);font-weight:800;font-size:clamp(44px,6.5vw,96px);line-height:1;letter-spacing:-.03em;color:#fff"><span data-count="1" data-suffix="M">0</span></div>
+          <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel);margin-top:14px">Target annual output</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- rapid iteration split -->
+    <div style="max-width:1440px;margin:0 auto;padding:0 clamp(18px,4vw,44px) clamp(80px,12vh,150px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(32px,5vw,72px);align-items:center">
+      <div data-reveal style="position:relative;border-radius:4px;overflow:hidden;border:1px solid var(--line);aspect-ratio:16/10">
+        <video data-inview-video autoplay muted loop playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;display:block"><source src="assets/Rapid_Iteration.mp4" type="video/mp4"/></video>
+        <div style="position:absolute;top:14px;left:14px;font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--green);display:flex;align-items:center;gap:7px"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:nrsBlink 1.4s infinite"></span>Rapid Iteration</div>
+      </div>
+      <div data-reveal>
+        <h3 style="font-family:var(--disp);font-weight:700;font-size:clamp(24px,3.4vw,48px);line-height:1.05;letter-spacing:-.02em;color:#fff;margin:0 0 20px">Iterate faster than the adversary.</h3>
+        <p style="font-size:16px;line-height:1.7;color:var(--steel);margin:0 0 20px;max-width:52ch">Victory is no longer determined solely by superior weapons. It belongs to superior systems, superior factories, and superior supply chains. We compress the loop from prototype to fielded system to a matter of days.</p>
+        <div style="display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line)">
+          <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);transition:padding .3s ease" style-hover="padding-left:12px"><span style="font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel)">CNC & Composites</span><span style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--green)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"></path></svg>In-house</span></div>
+          <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);transition:padding .3s ease" style-hover="padding-left:12px"><span style="font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel)">PCB & Electronics</span><span style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--green)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"></path></svg>In-house</span></div>
+          <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);transition:padding .3s ease" style-hover="padding-left:12px"><span style="font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel)">Radios & Propulsion</span><span style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--green)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"></path></svg>In-house</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MANIFESTO CTA ===================== -->
+  <section id="company" style="position:relative;padding:clamp(100px,18vh,220px) clamp(18px,4vw,44px);background:var(--obsidian);border-top:1px solid var(--line);text-align:center;overflow:hidden">
+    <div style="position:absolute;inset:0;background:radial-gradient(80% 60% at 50% 40%,rgba(255,90,31,.09),transparent 70%)"></div>
+    <div style="position:relative;max-width:1100px;margin:0 auto">
+      <div data-reveal style="font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--orange);margin-bottom:36px">When deterrence matters, scale wins.</div>
+      <h2 style="font-family:var(--disp);font-weight:800;font-size:clamp(34px,7vw,104px);line-height:.98;letter-spacing:-.03em;margin:0;color:#fff">
+        <span data-line-reveal style="display:block">Build the arsenal.</span>
+      </h2>
+      <p data-reveal style="font-size:clamp(15px,1.5vw,19px);line-height:1.7;color:var(--titanium);max-width:56ch;margin:32px auto 44px">Neros exists to build the industrial infrastructure required to maintain strategic advantage for democratic nations. We are hiring the engineers and operators who will build it.</p>
+      <div data-reveal style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+        <a data-magnetic data-cta href="#top" onClick="{{ navClick }}" style="display:inline-flex;align-items:center;gap:12px;background:var(--orange);color:#fff;text-decoration:none;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:17px 30px;border-radius:4px;transition:box-shadow .3s ease" style-hover="box-shadow:0 0 30px 4px rgba(255,90,31,.7)">Request Briefing<svg data-arrow width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== NEWS FEED ===================== -->
+  <section id="news" style="position:relative;padding:clamp(90px,16vh,190px) clamp(18px,4vw,44px);background:var(--carbon);border-top:1px solid var(--line)">
+    <div style="max-width:1440px;margin:0 auto">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:24px;margin-bottom:clamp(40px,6vh,72px)">
+        <h2 data-reveal style="font-family:var(--disp);font-weight:800;font-size:clamp(30px,5.5vw,72px);line-height:.98;letter-spacing:-.03em;margin:0;color:#fff">Latest<br/><span style="color:#fff">Dispatches</span></h2>
+        <a data-magnetic href="https://www.neros.tech/news" target="_blank" rel="noopener" style="font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--orange);text-decoration:none;padding-bottom:6px;border-bottom:1px solid var(--orange);display:inline-flex;align-items:center;gap:9px;transition:color .25s,border-color .25s" style-hover="color:#fff;border-bottom-color:#fff">All News<svg data-arrow-up width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></a>
+      </div>
+      <div data-news-grid style="display:grid;grid-template-columns:repeat(12,1fr);gap:1px;background:var(--line);border:1px solid var(--line)">
+        <!-- FEATURE -->
+        <a data-reveal data-magnetic href="{{ feature.url }}" target="_blank" rel="noopener" style="grid-column:span 6;position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:clamp(400px,52vh,560px);padding:clamp(28px,3vw,48px);background:var(--carbon);text-decoration:none;overflow:hidden" data-news-feature>
+          <img src="{{ feature.img }}" alt="{{ feature.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.16,1,.3,1)" data-news-img/>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,7,9,.94) 8%,rgba(6,7,9,.55) 45%,rgba(6,7,9,.15) 100%)"></div>
+          <div style="position:relative">
+            <div style="display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel);margin-bottom:20px">
+              <span style="color:var(--orange)">{{ feature.tag }}</span><span style="width:4px;height:4px;background:var(--steel);border-radius:50%"></span><span>{{ feature.date }}</span>
+            </div>
+            <h3 style="font-family:var(--disp);font-weight:800;font-size:clamp(26px,3vw,42px);line-height:1.04;letter-spacing:-.02em;margin:0 0 24px;color:#fff;max-width:18ch;text-wrap:balance">{{ feature.title }}</h3>
+            <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--titanium)">Read Now <svg data-arrow-up width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></span>
+          </div>
+        </a>
+        <!-- THUMBNAIL LIST -->
+        <div data-news-list style="grid-column:span 6;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)">
+          <sc-for list="{{ posts }}" as="post" hint-placeholder-count="6">
+            <a data-reveal data-magnetic href="{{ post.url }}" target="_blank" rel="noopener" style="position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:clamp(180px,15vw,240px);padding:clamp(18px,1.5vw,24px);background:var(--carbon);text-decoration:none;overflow:hidden" data-news-item>
+              <img src="{{ post.img }}" alt="{{ post.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5;transition:transform .8s cubic-bezier(.16,1,.3,1),opacity .5s ease" data-news-img/>
+              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,7,9,.95) 12%,rgba(6,7,9,.5) 55%,rgba(6,7,9,.2) 100%)"></div>
+              <div style="position:relative">
+                <div style="display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--orange);margin-bottom:12px">{{ post.tag }}<span style="color:var(--steel)">· {{ post.date }}</span></div>
+                <h4 style="font-family:var(--disp);font-weight:700;font-size:clamp(14px,1.05vw,17px);line-height:1.16;letter-spacing:-.01em;margin:0;color:#fff;text-wrap:balance">{{ post.title }}</h4>
+              </div>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer style="background:var(--obsidian);border-top:1px solid var(--line);padding:clamp(48px,7vh,80px) clamp(18px,4vw,44px) 40px">
+    <div style="max-width:1440px;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:40px">
+        <div style="max-width:340px">
+          <img src="assets/Logo_White.png" alt="NEROS" style="height:22px;margin-bottom:22px"/>
+          <p style="font-size:14px;line-height:1.6;color:var(--steel);margin:0">Sovereign defense manufacturing. Building the industrial foundation for Western strategic superiority.</p>
+        </div>
+        <div style="display:flex;gap:clamp(40px,7vw,110px);flex-wrap:wrap">
+          <div>
+            <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel);margin-bottom:18px">Systems</div>
+            <a data-magnetic href="#systems" onClick="{{ navClick }}" style="display:block;font-size:14px;color:var(--titanium);text-decoration:none;padding:6px 0;transition:color .25s,transform .3s cubic-bezier(.16,1,.3,1)" style-hover="color:#fff;transform:translateX(6px)">Archer</a>
+            <a data-magnetic href="#systems" onClick="{{ navClick }}" style="display:block;font-size:14px;color:var(--titanium);text-decoration:none;padding:6px 0;transition:color .25s,transform .3s cubic-bezier(.16,1,.3,1)" style-hover="color:#fff;transform:translateX(6px)">Crossbow</a>
+            <a data-magnetic href="#systems" onClick="{{ navClick }}" style="display:block;font-size:14px;color:var(--titanium);text-decoration:none;padding:6px 0;transition:color .25s,transform .3s cubic-bezier(.16,1,.3,1)" style-hover="color:#fff;transform:translateX(6px)">Longbow</a>
+          </div>
+          <div>
+            <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel);margin-bottom:18px">Company</div>
+            <a data-magnetic href="#manufacturing" onClick="{{ navClick }}" style="display:block;font-size:14px;color:var(--titanium);text-decoration:none;padding:6px 0;transition:color .25s,transform .3s cubic-bezier(.16,1,.3,1)" style-hover="color:#fff;transform:translateX(6px)">Manufacturing</a>
+            <a data-magnetic href="#technology" onClick="{{ navClick }}" style="display:block;font-size:14px;color:var(--titanium);text-decoration:none;padding:6px 0;transition:color .25s,transform .3s cubic-bezier(.16,1,.3,1)" style-hover="color:#fff;transform:translateX(6px)">Technology</a>
+            <a data-magnetic href="#company" onClick="{{ navClick }}" style="display:block;font-size:14px;color:var(--titanium);text-decoration:none;padding:6px 0;transition:color .25s,transform .3s cubic-bezier(.16,1,.3,1)" style-hover="color:#fff;transform:translateX(6px)">Careers</a>
+          </div>
+          <div>
+            <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel);margin-bottom:18px">Contact</div>
+            <a data-magnetic href="#company" onClick="{{ navClick }}" style="display:block;font-size:14px;color:var(--titanium);text-decoration:none;padding:6px 0;transition:color .25s,transform .3s cubic-bezier(.16,1,.3,1)" style-hover="color:#fff;transform:translateX(6px)">Defense Acquisition</a>
+            <a data-magnetic href="#company" onClick="{{ navClick }}" style="display:block;font-size:14px;color:var(--titanium);text-decoration:none;padding:6px 0;transition:color .25s,transform .3s cubic-bezier(.16,1,.3,1)" style-hover="color:#fff;transform:translateX(6px)">Partnerships</a>
+            <a data-magnetic href="#company" onClick="{{ navClick }}" style="display:block;font-size:14px;color:var(--titanium);text-decoration:none;padding:6px 0;transition:color .25s,transform .3s cubic-bezier(.16,1,.3,1)" style-hover="color:#fff;transform:translateX(6px)">Press</a>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-top:clamp(48px,7vh,80px);padding-top:26px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel)">
+        <span>© 2026 Neros Technologies</span>
+        <span>San Diego · CA · USA</span>
+      </div>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#FF5A1F&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#FF5A1F&quot;,&quot;#7DFF8A&quot;,&quot;#2A6FDB&quot;,&quot;#FF3737&quot;],&quot;section&quot;:&quot;Appearance&quot;},&quot;showCursor&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;smoothScroll&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.rootRef = React.createRef();
+    this.menuOpen = false;
+    this._raf = null;
+    this._cleanup = [];
+  }
+
+  renderVals(){
+    return {
+      rootRef: this.rootRef,
+      toggleMenu: (e)=>{ if(e&&e.preventDefault) e.preventDefault(); this.toggleMenu(); },
+      navClick: (e)=>this.navClick(e),
+      feature: { date: 'Dec 2025', tag: 'Product', img: 'assets/news/feature-archer-fiber.jpg', title: 'Archer Fiber — the world’s first NDAA-compliant fiber-optic FPV drone', url: 'https://www.neros.tech/articles/neros-technologies-and-kela-technologies-launch-archer-fiber----the-worlds-first-ndaa-compliant-fiber-optic-fpv-drone---pre-ordering-now' },
+      posts: [
+        { date: '2025', tag: 'Contract', img: 'assets/news/marines.jpg', title: 'U.S. Army selects Neros Archer FPV for the PBAS program', url: 'https://www.neros.tech/articles/u-s-army-selects-neros-archer-fpv-for-pbas-program' },
+        { date: '2025', tag: 'Contract', img: 'assets/news/fpv-closeup.jpg', title: 'Multi-million Marine Corps contract for Archer Strike FPV drones', url: 'https://www.neros.tech/articles/neros-secures-multi-million-marine-corps-contract-for-archer-strike-fpv-drones' },
+        { date: '2025', tag: 'Demo', img: 'assets/news/livefire.jpg', title: 'Neros Kela Archer live-fire demonstration', url: 'https://www.neros.tech/articles/neros-kela-archer-live-fire-demo' },
+        { date: '2026', tag: 'Event', img: 'assets/news/armybest.jpg', title: 'Neros supports the U.S. Army’s inaugural Best Drone Warfighter Competition', url: 'https://www.neros.tech/articles/neros-supports-u-s-armys-inaugural-best-drone-warfighter-competition' },
+        { date: '2025', tag: 'Sponsorship', img: 'assets/news/sae.jpg', title: 'Neros sponsors SAE collegiate competitions', url: 'https://www.neros.tech/articles/neros-announces-sponsorship-of-sae-collegiate-competitions' },
+        { date: '2025', tag: 'Company', img: 'assets/news/factory.jpg', title: 'American drone dominance: scaling domestic production', url: 'https://www.neros.tech/articles/american-drone-dominance' },
+      ],
+    };
+  }
+
+  toggleMenu(){
+    const root = this.rootRef.current; if(!root) return;
+    this.menuOpen = !this.menuOpen;
+    const menu = root.querySelector('[data-menu]');
+    if(menu) menu.style.transform = this.menuOpen ? 'translateY(0)' : 'translateY(-100%)';
+    if(this.lenis){ this.menuOpen ? this.lenis.stop() : this.lenis.start(); }
+  }
+
+  navClick(e){
+    e.preventDefault();
+    const href = e.currentTarget.getAttribute('href');
+    if(this.menuOpen) this.toggleMenu();
+    const root = this.rootRef.current;
+    if(href==='#top'){ this.lenis ? this.lenis.scrollTo(0,{duration:1.4}) : window.scrollTo({top:0,behavior:'smooth'}); return; }
+    const target = root.querySelector(href);
+    if(!target) return;
+    if(this.lenis) this.lenis.scrollTo(target,{offset:0,duration:1.4});
+    else target.scrollTo?.();
+  }
+
+  componentDidMount(){
+    // wait a tick for CDN scripts
+    this._boot = setTimeout(()=>this.boot(), 60);
+  }
+
+  boot(){
+    const root = this.rootRef.current; if(!root) return;
+    this.applyAccent();
+    if(this.props.smoothScroll !== false) this.initLenis();
+    if(this.props.showCursor !== false) this.initCursor();
+    this.initScramble();
+    this.initReveals();
+    this.initCounters();
+    this.initProducts();
+    this.initBlueprint();
+    this.initInviewVideos();
+    this.initNavScroll();
+  }
+
+  applyAccent(){
+    const root=this.rootRef.current; if(!root) return;
+    const c=this.props.accentColor; if(c) root.style.setProperty('--orange', c);
+  }
+
+  componentDidUpdate(){
+    this.applyAccent();
+    const root=this.rootRef.current; if(!root) return;
+    const cur=root.querySelector('[data-cursor]');
+    if(cur) cur.style.display = (this.props.showCursor===false)?'none':'block';
+  }
+
+  initLenis(){
+    if(!window.Lenis) return;
+    const lenis = new window.Lenis({ duration:1.15, easing:(t)=>Math.min(1,1.001-Math.pow(2,-10*t)), smoothWheel:true });
+    this.lenis = lenis; window.__nerosLenis = lenis;
+    const raf = (time)=>{ lenis.raf(time); this._raf = requestAnimationFrame(raf); };
+    this._raf = requestAnimationFrame(raf);
+  }
+
+  initNavScroll(){
+    const root = this.rootRef.current;
+    const navBg = root.querySelector('[data-nav-bg]');
+    const prog = root.querySelector('[data-progress]');
+    const heroVid = root.querySelector('[data-hero-video]');
+    const heroContent = root.querySelector('[data-hero-content]');
+    if(heroVid){ heroVid.loop = true; heroVid.muted = true; heroVid.addEventListener('ended',()=>{ heroVid.currentTime = 0; heroVid.play&&heroVid.play().catch(()=>{}); }); heroVid.play&&heroVid.play().catch(()=>{}); }
+    const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+    const onScroll = ()=>{
+      const y = window.scrollY || window.pageYOffset;
+      if(navBg){ navBg.style.opacity = y>60?'1':'0'; navBg.style.borderBottomColor = y>60?'rgba(255,255,255,.09)':'transparent'; }
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      if(prog) prog.style.width = (h>0? (y/h*100):0)+'%';
+      // hero parallax
+      if(!reduce){
+        const vh = window.innerHeight;
+        const p = Math.min(1, y/vh);
+        if(heroVid) heroVid.style.transform = 'translateY('+(p*70)+'px) scale('+(1+p*0.12)+')';
+        if(heroContent){ heroContent.style.transform = 'translateY('+(p*-46)+'px)'; heroContent.style.opacity = String(Math.max(0,1-p*1.15)); }
+      }
+      // hero coord ticker
+      const c = root.querySelector('[data-hero-coord]');
+      if(c){ const alt = (112 + Math.round(y/6)).toString().padStart(6,'0'); c.textContent = 'LAT 32.7157  LON -117.1611  ALT '+alt+'m'; }
+      this.checkReveals();
+      this.checkCounters();
+    };
+    window.addEventListener('scroll', onScroll, {passive:true});
+    this._cleanup.push(()=>window.removeEventListener('scroll',onScroll));
+    onScroll();
+  }
+
+  initCursor(){
+    if(matchMedia('(pointer:coarse)').matches) return;
+    const root = this.rootRef.current;
+    const cur = root.querySelector('[data-cursor]');
+    const ring = root.querySelector('[data-cursor-ring]');
+    if(!cur) return;
+    let x=innerWidth/2,y=innerHeight/2,cx=x,cy=y;
+    const move=(e)=>{ x=e.clientX; y=e.clientY; cur.style.opacity='1'; };
+    window.addEventListener('mousemove',move,{passive:true});
+    const loop=()=>{ cx+=(x-cx)*0.22; cy+=(y-cy)*0.22; cur.style.transform='translate('+cx+'px,'+cy+'px)'; this._curRaf=requestAnimationFrame(loop); };
+    loop();
+    // magnetic + hover grow
+    root.querySelectorAll('[data-magnetic]').forEach(el=>{
+      const enter=()=>{ if(ring) ring.style.transform='scale(1.55)'; el.style.transition='transform .25s cubic-bezier(.2,.8,.2,1)'; };
+      const leave=()=>{ if(ring) ring.style.transform='scale(1)'; el.style.transform='translate(0,0)'; };
+      const mm=(e)=>{ const r=el.getBoundingClientRect(); const mx=e.clientX-(r.left+r.width/2); const my=e.clientY-(r.top+r.height/2); const str=el.hasAttribute('data-cta')?0.4:0.22; el.style.transform='translate('+mx*str+'px,'+my*str+'px)'; };
+      el.addEventListener('mouseenter',enter); el.addEventListener('mouseleave',leave); el.addEventListener('mousemove',mm);
+    });
+    this._cleanup.push(()=>window.removeEventListener('mousemove',move));
+  }
+
+  initScramble(){
+    const root = this.rootRef.current;
+    const el = root.querySelector('[data-scramble]');
+    if(!el) return;
+    const target = el.getAttribute('data-scramble');
+    const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/#%<>*';
+    let frame=0; const total=target.length;
+    const tick=()=>{
+      let out='';
+      for(let i=0;i<total;i++){
+        const c=target[i];
+        if(c===' '){ out+=' '; continue; }
+        const rev = frame/2.2;
+        if(i < rev) out+=c;
+        else out+=glyphs[Math.floor(Math.random()*glyphs.length)];
+      }
+      el.textContent=out;
+      frame++;
+      if(frame/2.2 < total) this._scr=requestAnimationFrame(tick);
+      else el.textContent=target;
+    };
+    setTimeout(tick, 260);
+  }
+
+  initReveals(){
+    const root = this.rootRef.current;
+    // build reveal registry: [{el, delay, shown}]
+    this._reveals = [];
+    const rGroups=new Map();
+    root.querySelectorAll('[data-reveal]').forEach(el=>{
+      el.style.opacity='0'; el.style.transform='translateY(34px)';
+      el.style.transition='opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
+      el.style.willChange='transform,opacity';
+      const g=el.parentElement; if(!rGroups.has(g)) rGroups.set(g,0);
+      const idx=rGroups.get(g); rGroups.set(g, idx+1);
+      this._reveals.push({el, delay:idx*90, kind:'reveal', shown:false});
+    });
+    // line reveals: mask-style, staggered per parent group
+    const groups=new Map();
+    root.querySelectorAll('[data-line-reveal]').forEach(el=>{
+      el.style.display=el.style.display||'block';
+      el.style.opacity='0'; el.style.transform='translateY(115%)';
+      el.style.transition='opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1)';
+      el.style.willChange='transform,opacity';
+      const g=el.parentElement; if(!groups.has(g)) groups.set(g,0);
+      const idx=groups.get(g); groups.set(g, idx+1);
+      this._reveals.push({el, delay:idx*110, kind:'line', shown:false});
+    });
+    this.checkReveals();
+  }
+
+  checkReveals(){
+    if(!this._reveals) return;
+    const vh = window.innerHeight;
+    this._reveals.forEach(r=>{
+      if(r.shown) return;
+      const rect = r.el.getBoundingClientRect();
+      if(rect.top < vh*0.9 && rect.bottom > 0){
+        r.shown=true;
+        setTimeout(()=>{ r.el.style.opacity='1'; r.el.style.transform='translateY(0)'; }, r.delay);
+      }
+    });
+  }
+
+  initCounters(){
+    const root = this.rootRef.current;
+    this._counters = [];
+    root.querySelectorAll('[data-count]').forEach(el=>{ this._counters.push({el, done:false}); });
+    this.checkCounters();
+  }
+
+  checkCounters(){
+    if(!this._counters) return;
+    const vh = window.innerHeight;
+    this._counters.forEach(c=>{
+      if(c.done) return;
+      const rect = c.el.getBoundingClientRect();
+      if(rect.top < vh*0.85 && rect.bottom > 0){
+        c.done=true;
+        const el=c.el;
+        const to=parseFloat(el.getAttribute('data-count'));
+        const suf=el.getAttribute('data-suffix')||'';
+        const fmt=(v)=>{ let n = to>=1000? Math.round(v).toLocaleString('en-US') : (to%1?v.toFixed(1):Math.round(v).toString()); return n+suf; };
+        let s=performance.now();
+        const step=(t)=>{ const p=Math.min(1,(t-s)/1800); el.textContent=fmt(to*(1-Math.pow(1-p,3))); if(p<1)requestAnimationFrame(step); else { el.style.animation='nrsCountPop .7s ease'; } };
+        requestAnimationFrame(step);
+      }
+    });
+  }
+
+  initProducts(){
+    const root = this.rootRef.current;
+    const section = root.querySelector('[data-products]');
+    if(!section) return;
+    const pin = root.querySelector('[data-products-pin]');
+    const panels=[0,1,2].map(i=>root.querySelector('[data-panel="'+i+'"]'));
+    const videos=[0,1,2].map(i=>root.querySelector('[data-product-video="'+i+'"]'));
+    const dots=[0,1,2].map(i=>root.querySelector('[data-dot="'+i+'"]'));
+    let cur=-1; let pinMode='';
+    const setPin=(mode)=>{
+      if(mode===pinMode) return; pinMode=mode;
+      if(mode==='top'){ pin.style.position='absolute'; pin.style.top='0'; pin.style.bottom='auto'; pin.style.left='0'; pin.style.right='0'; }
+      else if(mode==='fixed'){ pin.style.position='fixed'; pin.style.top='0'; pin.style.bottom='auto'; pin.style.left='0'; pin.style.right='0'; }
+      else { pin.style.position='absolute'; pin.style.top='auto'; pin.style.bottom='0'; pin.style.left='0'; pin.style.right='0'; }
+    };
+    const setActive=(idx,animate=true)=>{
+      if(idx===cur) return; cur=idx;
+      panels.forEach((p,i)=>{ if(!p)return; const on=i===idx; p.style.opacity=on?'1':'0'; p.style.transform=on?'translateY(0)':'translateY(30px)'; p.style.pointerEvents=on?'auto':'none'; });
+      videos.forEach((v,i)=>{ if(!v)return; const on=i===idx; v.style.opacity=on?'1':'0'; if(on){ v.play&&v.play().catch(()=>{}); } else { v.pause&&v.pause(); } });
+      dots.forEach((d,i)=>{ if(!d)return; d.style.background=i===idx?'var(--orange)':'rgba(255,255,255,.16)'; });
+      if(animate) this.animatePanelNums(panels[idx]);
+    };
+    const onScroll=()=>{
+      const r=section.getBoundingClientRect();
+      const vh=window.innerHeight;
+      if(r.top>0) setPin('top');
+      else if(r.bottom<=vh) setPin('bottom');
+      else setPin('fixed');
+      const total=section.offsetHeight - vh;
+      const p=Math.min(1,Math.max(0,(-r.top)/total));
+      const idx=Math.min(2,Math.floor(p*3));
+      setActive(idx);
+    };
+    window.addEventListener('scroll',onScroll,{passive:true});
+    this._cleanup.push(()=>window.removeEventListener('scroll',onScroll));
+    setActive(0,false); onScroll();
+    // animate the first panel's numbers only once the section scrolls into view
+    let firstSeen=false;
+    const io=new IntersectionObserver((es)=>es.forEach(en=>{ if(en.isIntersecting && !firstSeen){ firstSeen=true; this.animatePanelNums(panels[cur<0?0:cur]); } }),{threshold:0.3});
+    io.observe(section);
+    this._cleanup.push(()=>io.disconnect());
+  }
+
+  animatePanelNums(panel){
+    if(!panel) return;
+    const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+    panel.querySelectorAll('[data-pnum]').forEach((el,k)=>{
+      const raw=el.getAttribute('data-to');
+      const to=parseFloat(raw); const dec=raw.indexOf('.')>=0;
+      const fin=dec?to.toFixed(1):Math.round(to).toString();
+      if(reduce){ el.textContent=fin; return; }
+      el.style.animation='none';
+      const s=performance.now()+k*70; const dur=900;
+      const step=(t)=>{ const p=Math.max(0,Math.min(1,(t-s)/dur)); const v=to*(1-Math.pow(1-p,3)); el.textContent=dec?v.toFixed(1):Math.round(v).toString(); if(p<1)requestAnimationFrame(step); else { el.textContent=fin; el.style.animation='nrsCountPop .7s ease'; } };
+      requestAnimationFrame(step);
+    });
+  }
+
+  initBlueprint(){
+    const root=this.rootRef.current;
+    const stage=root.querySelector('[data-astage]');
+    if(!stage) return;
+    const imgs=[0,1,2,3].map(i=>root.querySelector('[data-aimg="'+i+'"]'));
+    const tabs=[0,1,2,3].map(i=>root.querySelector('[data-atab="'+i+'"]'));
+    const scan=root.querySelector('[data-ascan]');
+    const hot=root.querySelector('[data-ahot]');
+    const specEl=root.querySelector('[data-aspec]');
+    const labelEl=root.querySelector('[data-alabel]');
+    const data=[
+      {code:'NRS-ARCHER-A0',specs:[['Designation','FPV-Strike'],['Class mass','1.5 KG'],['Rotor nodes','4× brushless'],['Airframe','Carbon monocoque']]},
+      {code:'NRS-ARCHER-RF',specs:[['Bands','3× freq-agile'],['Link','Mesh MIMO'],['Range','20 KM LOS'],['Diversity','VID + CTRL']]},
+      {code:'NRS-ARCHER-PT',specs:[['Motor','Brushless DC'],['Velocity','1900 KV'],['Prop','Tri-blade'],['Thrust','2.4 KG static']]},
+      {code:'NRS-ARCHER-EO',specs:[['Sensor','EO day'],['Field of view','82°'],['Guidance','Vision-lock'],['Mount','Fixed hardmount']]},
+    ];
+    let cur=-1;
+    const renderSpec=(i)=>{
+      const d=data[i]; if(!specEl) return;
+      specEl.innerHTML=d.specs.map(r=>'<div style="display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line)"><span style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel)">'+r[0]+'</span><span style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:#fff">'+r[1]+'</span></div>').join('');
+      if(labelEl) labelEl.textContent=d.code;
+    };
+    const reveal=(img)=>{
+      if(!img||!scan) return;
+      if(this._arev) cancelAnimationFrame(this._arev);
+      const start=performance.now(); const dur=1100;
+      scan.style.opacity='1';
+      const step=(t)=>{
+        const p=Math.min(1,(t-start)/dur);
+        const e=1-Math.pow(1-p,3);
+        img.style.clipPath='inset(0 0 '+((1-e)*100)+'% 0)';
+        scan.style.top=(e*100)+'%';
+        if(p<1){ this._arev=requestAnimationFrame(step); }
+        else { img.style.clipPath='inset(0 0 0 0)'; scan.style.opacity='0'; }
+      };
+      this._arev=requestAnimationFrame(step);
+    };
+    const show=(i,doReveal)=>{
+      if(i===cur && !doReveal) return; cur=i;
+      imgs.forEach((im,k)=>{ if(!im)return; im.style.opacity=k===i?'1':'0'; if(k!==i) im.style.clipPath='inset(0 0 0 0)'; });
+      tabs.forEach((tb,k)=>{ if(!tb)return; const on=k===i; tb.style.borderLeftColor=on?'var(--orange)':'var(--line)'; tb.style.background=on?'var(--carbon)':'transparent'; const num=tb.querySelector('[data-atab-num]'); const nm=tb.querySelector('[data-atab-name]'); if(num) num.style.color=on?'var(--orange)':'var(--steel)'; if(nm) nm.style.color=on?'#fff':'var(--titanium)'; });
+      if(hot){ hot.style.opacity=i===0?'1':'0'; hot.style.pointerEvents=i===0?'auto':'none'; }
+      renderSpec(i);
+      reveal(imgs[i]);
+    };
+    tabs.forEach((tb,k)=>{ if(tb) tb.addEventListener('click',()=>show(k,true)); });
+    root.querySelectorAll('[data-ahotspot]').forEach(b=>b.addEventListener('click',()=>show(parseInt(b.getAttribute('data-goto'),10),true)));
+    const par=root.querySelector('[data-aparallax]');
+    if(par && !matchMedia('(pointer:coarse)').matches){
+      const pm=(e)=>{ const r=stage.getBoundingClientRect(); const dx=(e.clientX-(r.left+r.width/2))/r.width; const dy=(e.clientY-(r.top+r.height/2))/r.height; par.style.transform='translate('+(dx*-14)+'px,'+(dy*-14)+'px)'; };
+      const pl=()=>{ par.style.transform='translate(0,0)'; };
+      stage.addEventListener('mousemove',pm); stage.addEventListener('mouseleave',pl);
+    }
+    renderSpec(0); cur=0;
+    let started=false;
+    const trigger=()=>{ if(started)return; started=true; show(0,true); };
+    const io=new IntersectionObserver((es)=>es.forEach(en=>{ if(en.isIntersecting) trigger(); }),{threshold:0.25});
+    io.observe(stage);
+    setTimeout(()=>trigger(), 2600);
+  }
+
+  initInviewVideos(){
+    const root=this.rootRef.current;
+    const vids=root.querySelectorAll('[data-inview-video]');
+    const io=new IntersectionObserver((es)=>es.forEach(en=>{ const v=en.target; if(en.isIntersecting){ v.play&&v.play().catch(()=>{}); } else { v.pause&&v.pause(); } }),{threshold:0.1});
+    vids.forEach(v=>io.observe(v));
+  }
+
+  componentWillUnmount(){
+    if(this._raf) cancelAnimationFrame(this._raf);
+    if(this._curRaf) cancelAnimationFrame(this._curRaf);
+    if(this._scr) cancelAnimationFrame(this._scr);
+    if(this._arev) cancelAnimationFrame(this._arev);
+    if(this._boot) clearTimeout(this._boot);
+    if(this.lenis) this.lenis.destroy();
+    this._cleanup.forEach(fn=>fn());
+  }
+}
+</script>
+</body>
+</html>
